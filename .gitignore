@@ -164,3 +164,6 @@ train_images
 test_images
 *.csv
 *.tsv
+
+# Model checkpoints
+checkpoints
