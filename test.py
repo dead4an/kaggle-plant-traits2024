@@ -23,6 +23,8 @@ ROOT = os.getcwd()
 TEST_IMG_FOLDER = os.path.join(ROOT, 'test_images')
 TEST_PATH = os.path.join(ROOT, 'test.csv')
 CHECKPOINTS_FOLDER = os.path.join(ROOT, 'checkpoints')
+NUM_TABULAR_FEATURES = 163
+LINEAR_NET_OUTPUT_DIM = 128
 
 # Load test dataset
 test_df = pd.read_csv(TEST_PATH).to_numpy()
@@ -32,8 +34,8 @@ checkpoint_path = os.path.join(CHECKPOINTS_FOLDER, 'efficientnetv2_m_5.pt')
 checkpoint = torch.load(checkpoint_path)
 
 backbone = efficientnet_v2_m()
-linear = LinearNet(163, 128)
-model = MultiInputResNet(backbone, linear, 128, 6).to(DEVICE)
+linear = LinearNet(NUM_TABULAR_FEATURES, LINEAR_NET_OUTPUT_DIM)
+model = MultiInputResNet(backbone, linear, LINEAR_NET_OUTPUT_DIM, 6).to(DEVICE)
 model.load_state_dict(checkpoint['model_state'])
 scaler = checkpoint['scaler']
 

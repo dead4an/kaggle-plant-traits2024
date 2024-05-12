@@ -16,7 +16,7 @@ import pandas as pd
 from models.resnet import MultiInputResNet
 from models.linear import LinearNet
 from models.utils import TrainDataset, train_epoch, evaluate, preprocess_data, \
-    load_train_data, save_checkpoint, load_checkpoint
+    load_train_data, save_checkpoint
 
 
 # Torch options
@@ -71,22 +71,25 @@ SAVE_CHECKPOINTS = True
 
 # Model and optimization
 backbone = efficientnet_v2_m(weights=EfficientNet_V2_M_Weights.IMAGENET1K_V1)
-linear_net = LinearNet(NUM_TABULAR_FEATURES, 128)
-model = MultiInputResNet(backbone, linear_net,  
-                         LINEAR_NET_OUTPUT_DIM, 6).to(DEVICE)
+linear = LinearNet(NUM_TABULAR_FEATURES, LINEAR_NET_OUTPUT_DIM)
+model = MultiInputResNet(backbone, linear, LINEAR_NET_OUTPUT_DIM, 6).to(DEVICE)
 optimizer = optim.Adam(model.parameters(), LR)
 criterion = nn.SmoothL1Loss().to(DEVICE)
 
 # Training
 for epoch in range(NUM_EPOCHS):
-    train_epoch(model, train_dataloader, optimizer, criterion, epoch)
-    evaluate(model, val_dataloader, criterion)
+    train_loss, train_r2 = train_epoch(model, train_dataloader, optimizer, 
+                                       criterion, epoch)
+    val_loss, val_r2 = evaluate(model, val_dataloader, criterion)
     if epoch % 5 == 0 and SAVE_CHECKPOINTS:
-        checkpoint_path = os.path.join(CHECKPOINTS_FOLDER, f'efficientnetv2_m_{epoch}.pt')
+        checkpoint_path = os.path.join(CHECKPOINTS_FOLDER, 
+                                       f'efficientnetv2_m_{epoch}.pt')
         save_checkpoint(
             model=model,
             optimizer=optimizer,
             scaler=scaler,
             path=checkpoint_path,
-            epoch=epoch
-)
+            epoch=epoch,
+            train_loss={'l1_loss': train_loss, 'r2_loss': train_r2},
+            val_loss={'l1_loss': val_loss, 'r2_loss': val_r2}
+        )

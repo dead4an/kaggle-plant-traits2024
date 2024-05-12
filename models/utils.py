@@ -77,7 +77,7 @@ class TestDataset(Dataset):
 
 # Model usage
 def train_epoch(model: nn.Module, dataloader: DataLoader, optimizer: Optimizer,
-                criterion: callable, epoch: int=0) -> None:
+                criterion: callable, epoch: int=0) -> tuple[float]:
     model.train()
     total_loss = 0
     total_r2 = 0
@@ -95,8 +95,10 @@ def train_epoch(model: nn.Module, dataloader: DataLoader, optimizer: Optimizer,
     total_r2 /= len(dataloader)
     print(f'Epoch: {epoch} | Loss: {total_loss} | R2: {total_r2}')
 
+    return total_loss, total_r2
+
 def evaluate(model: nn.Module, dataloader: DataLoader, 
-             criterion: callable) -> None:
+             criterion: callable) -> tuple[float]:
     model.eval()
     total_loss = 0
     total_r2 = 0
@@ -111,6 +113,8 @@ def evaluate(model: nn.Module, dataloader: DataLoader,
     total_loss /= len(dataloader)
     total_r2 /= len(dataloader)
     print(f'Loss: {total_loss} | R2: {total_r2}')
+
+    return total_loss, total_r2
 
 def inference(model: nn.Module, dataloader: DataLoader) -> list:
     model.eval()
@@ -145,19 +149,13 @@ def preprocess_data(df: np.ndarray, scaler: any=None) -> np.ndarray:
 
 # Model checkpoints management
 def save_checkpoint(model: nn.Module, optimizer: Optimizer, scaler: callable,
-                    path: str, epoch: int=0) -> None:
+                    path: str, epoch: int=0, train_loss: dict=None, 
+                    val_loss: dict=None) -> None:
     torch.save({
         'model_state': model.state_dict(),
         'optimizer': optimizer,
         'scaler': scaler,
-        'epoch': epoch
+        'epoch': epoch,
+        'train_loss': train_loss,
+        'val_loss': val_loss
     }, path)
-
-def load_checkpoint(path: str) -> tuple:
-    checkpoint = torch.load(path)
-    model_state = checkpoint['model_state']
-    optimizer = checkpoint['optimizer']
-    scaler = checkpoint['scaler']
-    epoch = checkpoint['epoch']
-
-    return model_state, optimizer, scaler, epoch
