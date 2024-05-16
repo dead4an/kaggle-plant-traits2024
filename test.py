@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from models.resnet import MultiInputResNet
 from models.linear import LinearNet
-from models.utils import TestDataset, inference, load_checkpoint, preprocess_data
+from models.utils import TestDataset, inference, preprocess_data
 
 
 # Torch options
@@ -30,7 +30,7 @@ LINEAR_NET_OUTPUT_DIM = 128
 test_df = pd.read_csv(TEST_PATH).to_numpy()
 
 # Load checkpoint
-checkpoint_path = os.path.join(CHECKPOINTS_FOLDER, 'efficientnetv2_m_5.pt')
+checkpoint_path = os.path.join(CHECKPOINTS_FOLDER, 'efficientnetv2_m_12.pt')
 checkpoint = torch.load(checkpoint_path)
 
 backbone = efficientnet_v2_m()
@@ -54,6 +54,7 @@ if __name__ == '__main__':
     output = inference(model, test_dataloader)
     target_columns = ['X4', 'X11', 'X18', 'X26', 'X50', 'X3112']
     submit_df = pd.DataFrame(data=output, columns=target_columns)
+    submit_df = submit_df[['X4', 'X11', 'X18', 'X50', 'X26', 'X3112']]
     submit_df.index = test_data[:, 0].astype(int)
     submit_df.index.name = 'id'
     submit_df.to_csv('submit.csv')

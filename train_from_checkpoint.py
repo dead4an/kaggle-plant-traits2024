@@ -25,7 +25,7 @@ torch.backends.cudnn.benchmark = True
 # Paths
 ROOT = os.getcwd()
 TRAIN_IMG_FOLDER = os.path.join(ROOT, 'train_images')
-TRAIN_PATH = os.path.join(ROOT, 'train.csv')
+TRAIN_PATH = os.path.join(ROOT, 'train_preprocessed.csv')
 CHECKPOINTS_FOLDER = os.path.join(ROOT, 'checkpoints')
 
 # Load train dataset
@@ -38,7 +38,7 @@ X_train, X_val, y_train, y_val = train_test_split(
 )
 
 # Parameters
-START_EPOCH = 5
+START_EPOCH = 9
 NUM_EPOCHS = 10
 LR = 4e-3
 NUM_TABULAR_FEATURES = 163
@@ -70,7 +70,7 @@ train_dataloader = DataLoader(
 val_dataset = TrainDataset(val_data, TRAIN_IMG_FOLDER)
 val_dataloader = DataLoader(
     dataset=val_dataset,
-    batch_size=8
+    batch_size=6
 )
 
 # Model and optimization
@@ -83,7 +83,7 @@ optimizer = optim.Adam(model.parameters(), LR)
 criterion = nn.SmoothL1Loss().to(DEVICE)
 
 # Training
-for epoch in range(START_EPOCH + 1, NUM_EPOCHS + START_EPOCH):
+for epoch in range(START_EPOCH + 1, NUM_EPOCHS + START_EPOCH + 1):
     train_loss, train_r2 = train_epoch(model, train_dataloader, optimizer, 
                                        criterion, epoch)
     val_loss, val_r2 = evaluate(model, val_dataloader, criterion)
